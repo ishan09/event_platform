@@ -120,12 +120,30 @@ defmodule EventPlatform.UserManagement do
     |> Repo.update()
   end
 
+  @doc """
+  Authenticate user email and password
+  """
+
+  def authenticate(email, password) do
+    case Repo.get_by(User, email: email) do
+      %User{password: hashed_password} = user ->
+        if Bcrypt.verify_pass(password, hashed_password) do
+          {:ok, user}
+        else
+          {:error, :unauthorized}
+        end
+
+      nil ->
+        {:error, :unauthorized}
+    end
+  end
+
   defp add_customer_role(params) do
-    params 
+    params
     |> Map.keys()
     |> List.first()
     |> is_atom()
-    |> if  do
+    |> if do
       Map.put(params, :role, "customer")
     else
       Map.put(params, "role", "customer")

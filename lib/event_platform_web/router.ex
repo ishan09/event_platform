@@ -22,8 +22,8 @@ defmodule EventPlatformWeb.Router do
   scope "/api", EventPlatformWeb do
     pipe_through :api
 
-    post "/users/signup", UserController, :signup
-
+    post "/signup", UserController, :signup
+    post "/login", LoginController, :login
   end
 
   # Enables LiveDashboard only for development

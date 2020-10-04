@@ -133,4 +133,19 @@ defmodule EventPlatform.UserManagementTest do
       assert updated_user.topics_of_interests == [topic1]
     end
   end
+
+  describe "test user authenticate" do
+    setup do
+      password = "A1234"
+
+      {
+        :ok,
+        password: password, user: insert(:user, %{password: Bcrypt.hash_pwd_salt(password)})
+      }
+    end
+
+    test "test authenticate/2 with correct credentials", %{user: user, password: password} do
+      assert {:ok, user} = UserManagement.authenticate(user.email, password)
+    end
+  end
 end

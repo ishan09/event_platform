@@ -48,7 +48,8 @@ defmodule EventPlatform.MixProject do
       {:ex_machina, "~> 2.3", only: [:test]},
       {:bcrypt_elixir, "~> 2.0"},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:guardian, "~> 2.1"}
     ]
   end
 

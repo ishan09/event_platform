@@ -12,7 +12,6 @@ defmodule EventPlatform.Factory do
       first_name: sequence("First_Name "),
       last_name: sequence("Last_Name "),
       email: sequence(:email, &"email-#{&1}@example.com"),
-      role: sequence(:role, ["admin", "user"]),
       date_of_birth: ~D[1990-11-01],
       gender: sequence(:role, ["male", "female"]),
       password: "Abc123"

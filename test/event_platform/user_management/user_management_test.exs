@@ -12,7 +12,7 @@ defmodule EventPlatform.UserManagementTest do
       first_name: "some first_name",
       gender: "some gender",
       last_name: "some last_name",
-      role: "some role",
+      role: "customer",
       password: "Password1"
     }
     @invalid_attrs %{
@@ -29,7 +29,7 @@ defmodule EventPlatform.UserManagementTest do
       {:ok, user} =
         attrs
         |> Enum.into(@valid_attrs)
-        |> UserManagement.create_user()
+        |> UserManagement.signup_user()
 
       user
     end
@@ -39,18 +39,18 @@ defmodule EventPlatform.UserManagementTest do
       assert UserManagement.get_user!(user.id) == user
     end
 
-    test "create_user/1 with valid data creates a user" do
-      assert {:ok, %User{} = user} = UserManagement.create_user(@valid_attrs)
+    test "signup_user/1 with valid data creates a user" do
+      assert {:ok, %User{} = user} = UserManagement.signup_user(@valid_attrs)
       assert user.date_of_birth == ~D[2010-04-17]
       assert user.email == "some@email.com"
       assert user.first_name == "some first_name"
       assert user.gender == "some gender"
       assert user.last_name == "some last_name"
-      assert user.role == "some role"
+      assert user.role == "customer"
     end
 
-    test "create_user/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = UserManagement.create_user(@invalid_attrs)
+    test "signup_user/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = UserManagement.signup_user(@invalid_attrs)
     end
 
     test "User changeset/2 for password without numeric character" do
@@ -89,7 +89,7 @@ defmodule EventPlatform.UserManagementTest do
     test "User changeset for duplicate emails" do
       user = user_fixture()
 
-      assert {:error, %Ecto.Changeset{}} = UserManagement.create_user(user |> Map.from_struct())
+      assert {:error, %Ecto.Changeset{}} = UserManagement.signup_user(user |> Map.from_struct())
     end
   end
 

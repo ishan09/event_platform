@@ -4,6 +4,7 @@ defmodule EventPlatform.UserManagement.User do
 
   alias EventPlatform.UserManagement.User
   @min_password_length 4
+  @allowed_roles ~w"admin customer"
   schema "users" do
     field(:first_name, :string)
     field(:last_name, :string)
@@ -27,6 +28,7 @@ defmodule EventPlatform.UserManagement.User do
     |> cast(attrs, [:first_name, :last_name, :email, :role, :date_of_birth, :gender, :password])
     |> validate_required([:first_name, :last_name, :email, :role, :password])
     |> unique_constraint(:email)
+    |> validate_inclusion(:role, @allowed_roles)
     |> validate_length(:password, min: @min_password_length)
     |> validate_format(:password, ~r/\d/, message: "must include at least 1 numeric character")
     |> validate_format(:password, ~r/[a-zA-Z]/,

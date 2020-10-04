@@ -25,7 +25,7 @@ defmodule EventPlatformWeb.ConnCase do
       import EventPlatformWeb.ConnCase
 
       alias EventPlatformWeb.Router.Helpers, as: Routes
-
+      import EventPlatform.Factory
       # The default endpoint for testing
       @endpoint EventPlatformWeb.Endpoint
     end

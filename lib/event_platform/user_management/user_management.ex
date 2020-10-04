@@ -25,19 +25,20 @@ defmodule EventPlatform.UserManagement do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
-  Creates a user.
+  Signup a user with role customer
 
   ## Examples
 
-      iex> create_user(%{field: value})
+      iex> signup_user(%{field: value})
       {:ok, %User{}}
 
-      iex> create_user(%{field: bad_value})
+      iex> signup_user(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user(params) do
+  def signup_user(params) do
     params
+    |> add_customer_role()
     |> User.create_user()
     |> Repo.insert()
   end
@@ -117,5 +118,17 @@ defmodule EventPlatform.UserManagement do
     user
     |> User.changeset_user_interests(updated_topic_of_interest)
     |> Repo.update()
+  end
+
+  defp add_customer_role(params) do
+    params 
+    |> Map.keys()
+    |> List.first()
+    |> is_atom()
+    |> if  do
+      Map.put(params, :role, "customer")
+    else
+      Map.put(params, "role", "customer")
+    end
   end
 end

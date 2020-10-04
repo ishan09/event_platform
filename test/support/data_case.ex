@@ -24,6 +24,7 @@ defmodule EventPlatform.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import EventPlatform.DataCase
+      import EventPlatform.Factory
     end
   end
 

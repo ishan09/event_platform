@@ -22,7 +22,7 @@ defmodule EventPlatformWeb.Router do
   scope "/api", EventPlatformWeb do
     pipe_through :api
 
-    post "/users", UserController, :signup
+    post "/users/signup", UserController, :signup
 
   end
 

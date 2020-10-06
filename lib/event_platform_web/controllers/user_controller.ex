@@ -13,4 +13,22 @@ defmodule EventPlatformWeb.UserController do
       |> render("show.json", user: user)
     end
   end
+
+  def index(conn, %{"user_id" => user_id}) do
+    with %User{} = user <- UserManagement.get_user(user_id) do
+      conn
+      |> render("show.json", user: user)
+    else
+      _ ->
+        {:error, :not_found}
+    end
+  end
+
+  def add_user_topic(conn, %{"user_id" => user_id, "topic_of_interest_id" => topic_of_interest_id}) do
+    with {:ok, user} <-
+           UserManagement.update_user_with_topics_of_interest(user_id, topic_of_interest_id) do
+      conn
+      |> render("show.json", user: user)
+    end
+  end
 end

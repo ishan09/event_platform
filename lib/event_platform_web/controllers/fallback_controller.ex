@@ -23,7 +23,7 @@ defmodule EventPlatformWeb.FallbackController do
     |> render("404.json", errors: "not_found")
   end
 
-  def call(conn, error) do
+  def call(conn, _error) do
     conn
     |> put_status(500)
     |> render("error.json", errors: :internal_server_error)

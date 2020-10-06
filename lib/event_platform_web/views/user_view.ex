@@ -18,25 +18,15 @@ defmodule EventPlatformWeb.UserView do
       email: user.email,
       gender: user.gender,
       role: user.role,
-      topics_of_interests:
-        if is_list(user.topics_of_interests) do
-          render_many(user.topics_of_interests, "topic_of_interest.json", as: :topic_of_interest)
-        else
-          []
-        end
+      topics_of_interests: render_topics_of_interests(user.topics_of_interests)
     }
   end
 
-  def render("topics_of_interests.json", %{topics_of_interests: topics_of_interests}) do
-    %{
-      data:
-        render_many(topics_of_interests, UserView, "topic_of_interest.json",
-          as: :topic_of_interest
-        )
-    }
+  defp render_topics_of_interests(topics_of_interests) when is_list(topics_of_interests) do
+    render(EventPlatformWeb.TopicOfInterestView, "index.json",
+      topics_of_interests: topics_of_interests
+    ).data
   end
 
-  def render("topic_of_interest.json", %{topic_of_interest: topic_of_interest}) do
-    %{id: topic_of_interest.id, title: topic_of_interest.title}
-  end
+  defp render_topics_of_interests(_), do: []
 end

@@ -11,18 +11,18 @@ defmodule EventPlatform.UserManagement do
   @doc """
   Gets a single user.
 
-  Raises `Ecto.NoResultsError` if the User does not exist.
+  Returns nil if the User does not exist.
 
   ## Examples
 
-      iex> get_user!(123)
+      iex> get_user(123)
       %User{}
 
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_user(456)
+      ** nil
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user(id), do: Repo.get(User, id)
 
   @doc """
   Signup a user with role customer
@@ -55,27 +55,40 @@ defmodule EventPlatform.UserManagement do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_with_topics_of_interests!(id) do
+  def get_user_with_topics_of_interests(id) do
     id
-    |> get_user!
+    |> get_user
     |> Repo.preload(:topics_of_interests)
   end
 
   @doc """
-  Gets a single topic of interest.
+  Gets all topics of interests.
 
-  Raises `Ecto.NoResultsError` if the topic of interest does not exist.
 
   ## Examples
 
-      iex> get_topic_of_interest!(123)
-      %TopicOfInterest{}
+      iex> list_topics_of_interests(123)
+      [%TopicOfInterest{}]
 
-      iex> get_topic_of_interest!(456)
-      ** (Ecto.NoResultsError)
 
   """
-  def get_topic_of_interest!(id), do: Repo.get!(TopicOfInterest, id)
+  def list_topics_of_interests(), do: Repo.all(TopicOfInterest)
+
+  @doc """
+  Gets a single topic of interest.
+
+  Returns nil if the topic of interest does not exist.
+
+  ## Examples
+
+      iex> get_topic_of_interest(123)
+      {:ok, %TopicOfInterest{}}
+
+      iex> get_topic_of_interest(456)
+     nil
+
+  """
+  def get_topic_of_interest(id), do: Repo.get(TopicOfInterest, id)
 
   @doc """
   Update a single topic of interest for a User.
@@ -92,12 +105,23 @@ defmodule EventPlatform.UserManagement do
 
   """
   def update_user_with_topics_of_interest(id, topic_of_interest_id) do
-    topic_of_interest = get_topic_of_interest!(topic_of_interest_id)
-    user = get_user_with_topics_of_interests!(id)
+    with {:get_topic_of_interest, %TopicOfInterest{} = topic_of_interest} <-
+           {:get_topic_of_interest, get_topic_of_interest(topic_of_interest_id)},
+         {:get_user_with_topics_of_interests, %User{} = user} <-
+           {:get_user_with_topics_of_interests, get_user_with_topics_of_interests(id)} do
+      user
+      |> User.changeset_user_interests([topic_of_interest | user.topics_of_interests])
+      |> Repo.update()
+    else
+      {:get_topic_of_interest, _} ->
+        {:error, :not_found}
 
-    user
-    |> User.changeset_user_interests([topic_of_interest | user.topics_of_interests])
-    |> Repo.update()
+      {:get_user_with_topics_of_interests, _} ->
+        {:error, :not_found}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -110,7 +134,7 @@ defmodule EventPlatform.UserManagement do
 
   """
   def remove_topic_of_interest_from_user(id, topic_of_interest_id) do
-    user = get_user_with_topics_of_interests!(id)
+    %User{} = user = get_user_with_topics_of_interests(id)
 
     updated_topic_of_interest =
       user.topics_of_interests |> Enum.reject(&(&1.id == topic_of_interest_id))

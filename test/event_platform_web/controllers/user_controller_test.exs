@@ -18,6 +18,11 @@ defmodule EventPlatformWeb.UserControllerTest do
     password: "123"
   }
 
+  setup %{conn: conn} do
+    conn = add_authentication_token(conn)
+    {:ok, conn: conn}
+  end
+
   describe "create user" do
     test "renders user when data is valid", %{conn: conn} do
       first_name = Map.get(@valid_attrs, :first_name)
@@ -48,5 +53,68 @@ defmodule EventPlatformWeb.UserControllerTest do
                ]
              } == json_response(conn, 422)
     end
+  end
+
+  describe "Get user" do
+    setup do
+      user = insert(:user)
+
+      {:ok, user: user}
+    end
+
+    test "get user when id is valid", %{conn: conn, user: %{id: user_id}} do
+      conn = get(conn, Routes.user_path(conn, :index, user_id))
+
+      assert %{"id" => ^user_id} = json_response(conn, 200)["data"]
+    end
+
+    test "get user when id is invalid", %{conn: conn} do
+      conn = get(conn, Routes.user_path(conn, :index, 20))
+
+      assert %{"error" => "Resource not found"} = json_response(conn, 404)
+    end
+  end
+
+  describe "Tests for user topics" do
+    setup do
+      user = insert(:user)
+      topic_of_interest = insert(:topic_of_interest)
+
+      {:ok, user: user, topic_of_interest: topic_of_interest}
+    end
+
+    test "Adding topics for the user", %{
+      conn: conn,
+      user: user,
+      topic_of_interest: %{id: topic_of_interest_id}
+    } do
+      conn =
+        post(conn, Routes.user_path(conn, :add_user_topic, user.id),
+          topic_of_interest_id: topic_of_interest_id
+        )
+
+      assert %{"topics_of_interests" => [%{"id" => ^topic_of_interest_id}]} =
+               json_response(conn, 200)["data"]
+    end
+
+    test "Adding Invalid topic for the user", %{
+      conn: conn,
+      user: user,
+      topic_of_interest: %{id: topic_of_interest_id}
+    } do
+      conn =
+        post(conn, Routes.user_path(conn, :add_user_topic, user.id),
+          topic_of_interest_id: topic_of_interest_id + 2
+        )
+
+      assert %{"error" => "Resource not found"} = json_response(conn, 404)
+    end
+  end
+
+  defp add_authentication_token(conn) do
+    user = insert(:user)
+    {:ok, token} = EventPlatformWeb.AuthenticationHelper.create_token(user)
+
+    conn |> put_req_header("authorization", "Bearer #{token}")
   end
 end

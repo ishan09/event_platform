@@ -13,6 +13,10 @@ defmodule EventPlatformWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :verify do
+    plug EventPlatformWeb.Plugs.VerifyUser
+  end
+
   scope "/", EventPlatformWeb do
     pipe_through :browser
 
@@ -24,6 +28,8 @@ defmodule EventPlatformWeb.Router do
 
     post "/signup", UserController, :signup
     post "/login", LoginController, :login
+
+    pipe_through(:verify)
   end
 
   # Enables LiveDashboard only for development

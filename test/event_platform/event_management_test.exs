@@ -2,10 +2,9 @@ defmodule EventPlatform.EventManagementTest do
   use EventPlatform.DataCase
 
   alias EventPlatform.EventManagement
+  alias EventPlatform.EventManagement.{Event, Invite}
 
   describe "events" do
-    alias EventPlatform.EventManagement.Event
-
     @valid_attrs %{
       description: "some description",
       end_time: ~N[2010-04-17 14:00:00],
@@ -80,6 +79,38 @@ defmodule EventPlatform.EventManagementTest do
       event = event_fixture()
       assert {:ok, %Event{}} = EventManagement.delete_event(event)
       assert is_nil(EventManagement.get_event(event.id))
+    end
+  end
+
+  describe "invites" do
+    setup do
+      host = insert(:user)
+      event = insert(:event, %{host_id: host.id})
+
+      invitee = insert(:user)
+
+      invite = insert(:invite, %{user_id: invitee.id, event_id: event.id})
+
+      {:ok, host: host, event: event, invite: invite, invitee: invitee}
+    end
+
+    test "list all invites", %{invite: invite} do
+      assert [^invite] = EventManagement.list_invites()
+    end
+
+    test "create invite with valid data", %{event: %{id: event_id}, invitee: %{id: user_id}} do
+      assert {:ok, %Invite{}} =
+               EventManagement.create_invite(%{user_id: user_id, event_id: event_id, status: 2})
+    end
+
+    test "create invite with invalid data", %{} do
+      assert {:error, %Ecto.Changeset{}} = EventManagement.create_invite(%{})
+    end
+
+    test "delete invite ", %{invite: invite} do 
+      assert {:ok, %Invite{}}  = EventManagement.delete_invite(invite)
+
+      assert is_nil(Repo.get(Invite, invite.id))
     end
   end
 end

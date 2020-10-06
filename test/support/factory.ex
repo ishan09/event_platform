@@ -6,7 +6,7 @@ defmodule EventPlatform.Factory do
   use Plug.Test
 
   alias EventPlatform.UserManagement.{User, TopicOfInterest}
-  alias EventPlatform.EventManagement.Event
+  alias EventPlatform.EventManagement.{Event, Invite}
 
   def user_factory do
     %User{
@@ -31,6 +31,12 @@ defmodule EventPlatform.Factory do
       end_time: ~N[2020-01-01 13:00:07],
       location: sequence("Location "),
       type: sequence("Type ")
+    }
+  end
+
+  def invite_factory do
+    %Invite{
+      status: 1
     }
   end
 end

@@ -6,7 +6,7 @@ defmodule EventPlatform.EventManagement do
   import Ecto.Query, warn: false
   alias EventPlatform.Repo
 
-  alias EventPlatform.EventManagement.Event
+  alias EventPlatform.EventManagement.{Event, Invite}
 
   @doc """
   Returns the list of events.
@@ -89,5 +89,54 @@ defmodule EventPlatform.EventManagement do
     Repo.delete(event)
   end
 
-  
+  # ------------------------------------------------
+
+  @doc """
+  Returns the list of invites.
+
+  ## Examples
+
+      iex> list_invites()
+      [%Invite{}, ...]
+
+  """
+  def list_invites do
+    Repo.all(Invite)
+  end
+
+  @doc """
+  Creates a invite.
+
+  ## Examples
+
+      iex> create_invite(%{field: value})
+      {:ok, %Invite{}}
+
+      iex> create_invite(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_invite(attrs) do
+    %Invite{}
+    |> Invite.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Deletes a invite.
+
+  ## Examples
+
+      iex> delete_invite(invite)
+      {:ok, %Invite{}}
+
+      iex> delete_invite(invite)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_invite(id) when is_binary(id), do: Invite |> Repo.get(id) |> delete_invite()
+
+  def delete_invite(%Invite{} = invite) do
+    Repo.delete(invite)
+  end
 end

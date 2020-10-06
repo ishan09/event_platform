@@ -147,7 +147,7 @@ defmodule EventPlatform.UserManagement do
 
   """
   def remove_topic_of_interest_from_user(id, topic_of_interest_id) do
-    %User{} = user = get_user_with_topics_of_interests(id)   |> IO.inspect(label: "---###---")
+    %User{} = user = get_user_with_topics_of_interests(id) 
 
 
     updated_topic_of_interest =

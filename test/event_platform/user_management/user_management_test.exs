@@ -132,7 +132,7 @@ defmodule EventPlatform.UserManagementTest do
       UserManagement.update_user_with_topics_of_interest(user.id, topic2.id)
 
       assert {:ok, updated_user} =
-               UserManagement.remove_topic_of_interest_from_user(user.id, topic2.id)
+               UserManagement.remove_topic_of_interest_from_user(user.id, topic2.id |> to_string)
 
       assert updated_user.topics_of_interests == [topic1]
     end

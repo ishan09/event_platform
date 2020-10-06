@@ -2,6 +2,10 @@ defmodule EventPlatformWeb.UserView do
   use EventPlatformWeb, :view
   alias EventPlatformWeb.UserView
 
+  def render("ok.json", _) do
+    :ok
+  end
+
   def render("index.json", %{users: users}) do
     %{data: render_many(users, UserView, "user.json")}
   end

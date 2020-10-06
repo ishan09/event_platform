@@ -16,6 +16,7 @@ defmodule EventPlatformWeb.UserController do
 
   def list(conn, _params) do
     users = UserManagement.list_users()
+
     conn
     |> render("index.json", users: users)
   end
@@ -35,6 +36,17 @@ defmodule EventPlatformWeb.UserController do
            UserManagement.update_user_with_topics_of_interest(user_id, topic_of_interest_id) do
       conn
       |> render("show.json", user: user)
+    end
+  end
+
+  def remove_user_topic(conn, %{
+        "user_id" => user_id,
+        "topic_of_interest_id" => topic_of_interest_id
+      }) do
+    with {:ok, _user} <-
+           UserManagement.remove_topic_of_interest_from_user(user_id, topic_of_interest_id) do
+      conn
+      |> render("ok.json", [])
     end
   end
 end

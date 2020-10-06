@@ -147,10 +147,11 @@ defmodule EventPlatform.UserManagement do
 
   """
   def remove_topic_of_interest_from_user(id, topic_of_interest_id) do
-    %User{} = user = get_user_with_topics_of_interests(id)
+    %User{} = user = get_user_with_topics_of_interests(id)   |> IO.inspect(label: "---###---")
+
 
     updated_topic_of_interest =
-      user.topics_of_interests |> Enum.reject(&(&1.id == topic_of_interest_id))
+      user.topics_of_interests |> Enum.reject(&(&1.id |> to_string == topic_of_interest_id))
 
     user
     |> User.changeset_user_interests(updated_topic_of_interest)

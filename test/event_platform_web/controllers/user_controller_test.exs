@@ -115,6 +115,25 @@ defmodule EventPlatformWeb.UserControllerTest do
 
       assert %{"error" => "Resource not found"} = json_response(conn, 404)
     end
+
+    test "Deleting topic of the user", %{
+      conn: conn,
+      user: user,
+      topic_of_interest: %{id: topic_of_interest_id}
+    } do
+      EventPlatform.UserManagement.update_user_with_topics_of_interest(
+        user.id,
+        topic_of_interest_id
+      )
+
+      conn =
+        delete(conn, Routes.user_path(conn, :remove_user_topic, user.id, topic_of_interest_id))
+
+      assert "ok" = json_response(conn, 200)
+
+      assert [] ==
+               EventPlatform.UserManagement.get_user_with_topics_of_interests(user.id).topics_of_interests
+    end
   end
 
   defp add_authentication_token(conn) do

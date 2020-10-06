@@ -30,13 +30,13 @@ defmodule EventPlatformWeb.Router do
     post "/login", LoginController, :login
 
     pipe_through(:verify)
-    
+
     get "/topics", TopicOfInterestController, :list
-    
     get "/users", UserController, :list
     get "/users/:user_id", UserController, :index
     get "/users/:user_id/topics", TopicOfInterestController, :user_topics
     post "/users/:user_id/topics", UserController, :add_user_topic
+    delete "/users/:user_id/topics/:topic_of_interest_id", UserController, :remove_user_topic
   end
 
   # Enables LiveDashboard only for development

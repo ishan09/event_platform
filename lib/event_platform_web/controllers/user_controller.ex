@@ -14,6 +14,12 @@ defmodule EventPlatformWeb.UserController do
     end
   end
 
+  def list(conn, _params) do
+    users = UserManagement.list_users()
+    conn
+    |> render("index.json", users: users)
+  end
+
   def index(conn, %{"user_id" => user_id}) do
     with %User{} = user <- UserManagement.get_user(user_id) do
       conn

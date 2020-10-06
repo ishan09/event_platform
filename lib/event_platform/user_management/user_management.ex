@@ -9,6 +9,19 @@ defmodule EventPlatform.UserManagement do
   alias EventPlatform.Repo
 
   @doc """
+  Gets all users.
+
+
+  ## Examples
+
+      iex> list_users()
+      [%User{}]
+
+
+  """
+  def list_users(), do: Repo.all(User)
+
+  @doc """
   Gets a single user.
 
   Returns nil if the User does not exist.
@@ -48,11 +61,11 @@ defmodule EventPlatform.UserManagement do
 
   ## Examples
 
-      iex> get_user!(123)
+      iex> get_user(123)
       %User{}
 
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_user(555)
+      nil
 
   """
   def get_user_with_topics_of_interests(id) do
@@ -67,7 +80,7 @@ defmodule EventPlatform.UserManagement do
 
   ## Examples
 
-      iex> list_topics_of_interests(123)
+      iex> list_topics_of_interests()
       [%TopicOfInterest{}]
 
 

@@ -62,6 +62,12 @@ defmodule EventPlatformWeb.UserControllerTest do
       {:ok, user: user}
     end
 
+    test "get all users", %{conn: conn} do
+      conn = get(conn, Routes.user_path(conn, :list))
+
+      assert is_list(json_response(conn, 200)["data"])
+    end
+
     test "get user when id is valid", %{conn: conn, user: %{id: user_id}} do
       conn = get(conn, Routes.user_path(conn, :index, user_id))
 

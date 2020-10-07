@@ -1,6 +1,7 @@
 defmodule EventPlatform.EventManagement.Event do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Ecto.Changeset
   alias EventPlatform.UserManagement.User
   alias EventPlatform.EventManagement.Event
 
@@ -22,5 +23,19 @@ defmodule EventPlatform.EventManagement.Event do
     event
     |> cast(attrs, [:title, :description, :type, :start_time, :end_time, :location])
     |> validate_required([:title, :description, :type, :start_time, :end_time, :location])
+    |> validate_date_range()
+  end
+
+
+  defp validate_date_range(%Changeset{} = changeset) do
+    with %NaiveDateTime{} = start_time <-
+           get_field(changeset, :start_time) ,
+         %NaiveDateTime{} = end_time <- get_field(changeset, :end_time),
+         :gt <- NaiveDateTime.compare(start_time, end_time) do
+      add_error(changeset, :end_time, "Start time should be before End time.")
+    else
+      _err ->
+        changeset
+    end
   end
 end

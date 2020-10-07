@@ -48,11 +48,23 @@ defmodule EventPlatform.EventManagement do
       iex> create_event(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
+      iex> create_event(%{field: bad_date_format})
+      {:error, %{}}
+
   """
   def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert()
+    attrs
+    |> keys_to_atom
+    |> validate_dates([:end_date, :start_date])
+    |> case do
+      {:ok, attrs} ->
+        %Event{}
+        |> Event.changeset(attrs)
+        |> Repo.insert()
+
+      {:error, errors} ->
+        {:error, errors}
+    end
   end
 
   @doc """
@@ -68,9 +80,19 @@ defmodule EventPlatform.EventManagement do
 
   """
   def update_event(%Event{} = event, attrs) do
-    event
-    |> Event.changeset(attrs)
-    |> Repo.update()
+    attrs
+    |> keys_to_atom
+    |> validate_dates([:end_date, :start_date])
+    |> case do
+      {:ok, attrs} ->
+        event
+        |> Event.changeset(attrs)
+        |> Repo.update()
+
+      {:error, errors} ->
+        {:error, errors}
+    end
+    
   end
 
   @doc """
@@ -138,5 +160,65 @@ defmodule EventPlatform.EventManagement do
 
   def delete_invite(%Invite{} = invite) do
     Repo.delete(invite)
+  end
+
+  @doc """
+  Validates the map for date format in given keys
+
+  If map has empty value for the given key, it ignores it
+
+  ##Returns 
+    {:ok, map} 
+    {:error, %{message: string, keys: [key]}}
+
+  """
+
+  defp validate_dates(map, keys) do
+    vaidation_errors =
+      keys
+      |> Enum.reduce([], fn key, errors ->
+        map
+        |> Map.get(key, "")
+        |> case do
+          "" ->
+            errors
+
+          datetime ->
+            datetime
+            |> NaiveDateTime.from_iso8601()
+            |> case do
+              {:ok, _} ->
+                errors
+
+              {:error, _} ->
+                [key | errors]
+            end
+        end
+      end)
+
+    case vaidation_errors do
+      [] ->
+        {:ok, map}
+
+      _ ->
+        {:error,
+         %{message: "Datetime should be of format yyyy-mm-dd hh:mm:ss", keys: vaidation_errors}}
+    end
+  end
+
+  @doc """
+  Converts the keys of map to atom if it keys are string
+
+  """
+
+  defp keys_to_atom(map) do
+    map
+    |> Enum.reduce(%{}, fn {k, v}, result ->
+      if is_binary(k) do
+        result |> Map.put(String.to_atom(k), v)
+      else
+        result |> Map.put(k, v)
+      end
+    end)
   end
 end

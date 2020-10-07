@@ -27,8 +27,8 @@ defmodule EventPlatform.Factory do
     %Event{
       title: sequence("Topic "),
       description: sequence("Description "),
-      start_time: ~N[2020-01-01 12:00:07],
-      end_time: ~N[2020-01-01 13:00:07],
+      start_time: "2020-01-01 12:00:07",
+      end_time: "2020-01-01 13:00:07",
       location: sequence("Location "),
       type: sequence("Type ")
     }

@@ -7,17 +7,17 @@ defmodule EventPlatform.EventManagementTest do
   describe "events" do
     @valid_attrs %{
       description: "some description",
-      end_time: ~N[2010-04-17 14:00:00],
+      end_time: "2010-04-17 14:00:00",
       location: "some location",
-      start_time: ~N[2010-04-17 14:00:00],
+      start_time: "2010-04-17 12:00:00",
       title: "some title",
       type: "some type"
     }
     @update_attrs %{
       description: "some updated description",
-      end_time: ~N[2011-05-18 15:01:01],
+      end_time: "2011-05-18 15:02:01",
       location: "some updated location",
-      start_time: ~N[2011-05-18 15:01:01],
+      start_time: "2011-05-18 15:01:01",
       title: "some updated title",
       type: "some updated type"
     }
@@ -49,9 +49,19 @@ defmodule EventPlatform.EventManagementTest do
       assert event.description == "some description"
       assert event.end_time == ~N[2010-04-17 14:00:00]
       assert event.location == "some location"
-      assert event.start_time == ~N[2010-04-17 14:00:00]
+      assert event.start_time == ~N[2010-04-17 12:00:00]
       assert event.title == "some title"
       assert event.type == "some type"
+    end
+
+    test "create_event/1 with invalid date format returns error" do
+      attrs = @valid_attrs |> Map.merge(%{start_date: "2011-31-05 15:01:01", end_date: "2011-31-05 16:01:01"})
+      assert {:error, %{keys: [:start_date, :end_date]}} = EventManagement.create_event(attrs)
+    end
+
+    test "create_event/1 with end_date before start_date returns error changeset" do
+      attrs = @valid_attrs |> Map.merge(%{start_time: "2020-12-31 16:01:01", end_time: "2011-12-31 15:01:01"})
+      assert {:error, %Ecto.Changeset{}} = EventManagement.create_event(attrs)
     end
 
     test "create_event/1 with invalid data returns error changeset" do
@@ -62,7 +72,7 @@ defmodule EventPlatform.EventManagementTest do
       event = event_fixture()
       assert {:ok, %Event{} = event} = EventManagement.update_event(event, @update_attrs)
       assert event.description == "some updated description"
-      assert event.end_time == ~N[2011-05-18 15:01:01]
+      assert event.end_time == ~N[2011-05-18 15:02:01]
       assert event.location == "some updated location"
       assert event.start_time == ~N[2011-05-18 15:01:01]
       assert event.title == "some updated title"

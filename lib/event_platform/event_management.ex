@@ -38,6 +38,27 @@ defmodule EventPlatform.EventManagement do
   def get_event(id), do: Repo.get(Event, id)
 
   @doc """
+    Gets a single event with invites.
+
+    Returns nil if the Event does not exist.
+
+    ## Examples
+
+      iex> get_event(123)
+      %Event{}
+
+      iex> get_event(456)
+      nil
+
+  """
+  def get_event_with_invites(id) do
+    id
+    |> get_event()
+    |> Repo.preload(:invites)
+  end
+  
+
+  @doc """
   Creates an event.
 
   ## Examples
@@ -160,6 +181,17 @@ defmodule EventPlatform.EventManagement do
 
   def delete_invite(%Invite{} = invite) do
     Repo.delete(invite)
+  end
+
+  def add_invitees(event_id, user_ids) do
+    multi = Invite.add_invitees(event_id, user_ids)
+
+    with {:ok, result} <- Repo.transaction(multi) do
+      {:ok,  result |> Enum.map(& elem(&1, 1))}
+    else
+      {:error, _failed_operation, failed_value, _changes} ->
+        {:error, failed_value.errors}
+    end
   end
 
   @doc """

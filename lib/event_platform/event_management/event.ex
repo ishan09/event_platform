@@ -3,7 +3,7 @@ defmodule EventPlatform.EventManagement.Event do
   import Ecto.Changeset
   alias Ecto.Changeset
   alias EventPlatform.UserManagement.User
-  alias EventPlatform.EventManagement.Event
+  alias EventPlatform.EventManagement.{Event, Invite}
 
   schema "events" do
     field :title, :string
@@ -16,6 +16,12 @@ defmodule EventPlatform.EventManagement.Event do
     timestamps()
 
     belongs_to(:host, User, foreign_key: :host_id, references: :id)
+    has_many(:invites, Invite,
+          foreign_key: :event_id,
+          on_delete: :delete_all
+      )
+    has_many(:invitees, through: [:invites, :invitee])
+    
   end
 
   @doc false
@@ -26,6 +32,7 @@ defmodule EventPlatform.EventManagement.Event do
     |> validate_date_range()
   end
 
+  
 
   defp validate_date_range(%Changeset{} = changeset) do
     with %NaiveDateTime{} = start_time <-

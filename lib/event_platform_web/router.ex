@@ -21,6 +21,10 @@ defmodule EventPlatformWeb.Router do
     plug EventPlatformWeb.Plugs.VerifyRole, ["admin"]
   end
 
+  pipeline :verify_member do
+    plug EventPlatformWeb.Plugs.VerifyRole, ["member"]
+  end
+
   scope "/", EventPlatformWeb do
     pipe_through :browser
 

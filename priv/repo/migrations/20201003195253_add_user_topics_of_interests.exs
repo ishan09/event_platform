@@ -15,5 +15,7 @@ defmodule EventPlatform.Repo.Migrations.AddUserTopicsOfInterests do
         null: false
       )
     end
+
+    create(unique_index(:users_topics_of_interests, [:topic_of_interest_id, :user_id]))
   end
 end

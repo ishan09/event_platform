@@ -12,5 +12,7 @@ defmodule EventPlatform.Repo.Migrations.CreateInvites do
 
     create index(:invites, [:event_id])
     create index(:invites, [:user_id])
+    create unique_index(:invites, [:event_id, :user_id])
+
   end
 end

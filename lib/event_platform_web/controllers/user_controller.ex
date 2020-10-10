@@ -33,9 +33,10 @@ defmodule EventPlatformWeb.UserController do
 
   def add_user_topic(conn, %{"user_id" => user_id, "topic_of_interest_id" => topic_of_interest_id}) do
     with {:ok, user} <-
-           UserManagement.update_user_with_topics_of_interest(user_id, topic_of_interest_id) do
+           UserManagement.update_user_with_topics_of_interest(user_id, topic_of_interest_id),
+           updated_user <-  UserManagement.get_user_with_topics_of_interests(user.id) do
       conn
-      |> render("show.json", user: user)
+      |> render("show.json", user: updated_user)
     end
   end
 

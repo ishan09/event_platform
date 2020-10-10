@@ -4,7 +4,7 @@ defmodule EventPlatform.UserManagement.User do
 
   alias EventPlatform.UserManagement.User
   @min_password_length 4
-  @allowed_roles ~w"admin customer"
+  @allowed_roles ~w"admin member"
   schema "users" do
     field(:first_name, :string)
     field(:last_name, :string)

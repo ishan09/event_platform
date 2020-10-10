@@ -19,8 +19,11 @@ defmodule EventPlatform.UserManagement do
 
 
   """
-  def list_users(), do: Repo.all(User)
-
+  def list_users() do
+    User
+    |> preload(:topics_of_interests) 
+    |> Repo.all() 
+  end
   @doc """
   Gets a single user.
 
@@ -38,7 +41,7 @@ defmodule EventPlatform.UserManagement do
   def get_user(id), do: Repo.get(User, id)
 
   @doc """
-  Signup a user with role customer
+  Signup a user with role member
 
   ## Examples
 
@@ -51,7 +54,7 @@ defmodule EventPlatform.UserManagement do
   """
   def signup_user(params) do
     params
-    |> add_customer_role()
+    |> add_member_role()
     |> User.create_user()
     |> Repo.insert()
   end
@@ -176,15 +179,15 @@ defmodule EventPlatform.UserManagement do
     end
   end
 
-  defp add_customer_role(params) do
+  defp add_member_role(params) do
     params
     |> Map.keys()
     |> List.first()
     |> is_atom()
     |> if do
-      Map.put(params, :role, "customer")
+      Map.put(params, :role, "member")
     else
-      Map.put(params, "role", "customer")
+      Map.put(params, "role", "member")
     end
   end
 end

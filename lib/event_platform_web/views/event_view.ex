@@ -1,10 +1,15 @@
 defmodule EventPlatformWeb.EventView do
   use EventPlatformWeb, :view
-  alias EventPlatformWeb.EventView
+  alias EventPlatformWeb.{EventView, UserView}
 
   def render("ok.json", _) do
     :ok
   end
+
+  def render("index_event_details.json", %{events: events}) do
+    %{data: render_many(events, EventView, "event_details.json")}
+  end
+
   def render("index.json", %{events: events}) do
     %{data: render_many(events, EventView, "event.json")}
   end
@@ -14,7 +19,6 @@ defmodule EventPlatformWeb.EventView do
   end
 
   def render("event_details.json", %{event: event}) do
-    event_datails =
       if event != nil do
         render(EventView, "event.json", event: event)
         |> Map.merge(%{
@@ -23,8 +27,6 @@ defmodule EventPlatformWeb.EventView do
           invitation_cancelled: Enum.count(event.invites, &(&1.status == 2))
         })
       end
-
-    %{data: event_datails}
   end
 
   def render("event.json", %{event: event}) do
@@ -35,7 +37,9 @@ defmodule EventPlatformWeb.EventView do
       type: event.type,
       start_time: event.start_time,
       end_time: event.end_time,
-      location: event.location
+      location: event.location,
+      host: render_one(event.host, UserView, "user.json"),
+      host_id: event.host_id
     }
   end
 end

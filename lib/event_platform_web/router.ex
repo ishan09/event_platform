@@ -47,6 +47,24 @@ defmodule EventPlatformWeb.Router do
     delete "/users/:user_id/topics/:topic_of_interest_id", UserController, :remove_user_topic
   end
 
+  scope "/api", EventPlatformWeb do
+    pipe_through :api
+    
+    pipe_through(:verify)
+
+    scope "/admin" do
+      pipe_through(:verify_admin)
+
+      get "/events", EventController, :index
+      post "/events", EventController, :create
+      get "/events/:id", EventController, :show
+      put "/events/:id", EventController, :update
+      delete "/events/:id", EventController, :delete
+
+    end
+
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

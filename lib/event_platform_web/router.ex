@@ -64,8 +64,14 @@ defmodule EventPlatformWeb.Router do
       get "/events/:event_id/invitees", InviteController, :index
       post "/events/:event_id/invitees", InviteController, :create
       
+      get "/events/:event_id/invitees/:status", InviteController, :index
     end
 
+    scope "/v1", as: :v1 do
+      pipe_through(:verify_member)
+      get "/events", EventController, :index
+      put "/events/:event_id/rsvp", InviteController, :add_rsvp
+    end
   end
 
   # Enables LiveDashboard only for development

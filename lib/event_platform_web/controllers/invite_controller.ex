@@ -31,4 +31,19 @@ defmodule EventPlatformWeb.InviteController do
     end
   end
 
+  def add_rsvp(conn, %{"event_id" => event_id, "rsvp" => rsvp}) do
+    user_id = conn.assigns.user.id
+
+    with {:get_event, %Event{} = event} <- {:get_event, EventManagement.get_event(event_id)},
+         {:ok, _invite} <- EventManagement.update_invite(event.id, user_id, rsvp) do
+      render(conn, "ok.json")
+    else
+      {:get_event, _} ->
+        {:error, :not_found}
+
+      _ ->
+        render(conn, "error.json", error: "Invalid invite response")
+    end
+  end
+
 end

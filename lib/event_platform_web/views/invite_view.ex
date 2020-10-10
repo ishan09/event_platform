@@ -4,6 +4,10 @@ defmodule EventPlatformWeb.InviteView do
 
   @status %{1 => "invited", 2 => "rejected", 3 => "accepted"}
 
+  def render("ok.json", _) do
+    :ok
+  end
+
   def render("index.json", %{invites: invites}) do
     %{data: render_many(invites, InviteView, "invite.json")}
   end

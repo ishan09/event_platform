@@ -19,6 +19,39 @@ defmodule EventPlatform.EventManagement do
   """
   def list_events do
     Repo.all(Event)
+    |> preload_invites()
+  end
+
+  @doc """
+  Returns the list of events for a User Id
+
+  ## Examples
+
+      iex> list_events(user_id)
+      [%Event{}, ...]
+
+  """
+  def list_events(user_id) do
+    user_id
+    |>user_events_query
+    |> Repo.all()
+  end
+
+   @doc """
+  Returns the list of events a User with given status
+
+  ## Examples
+
+      iex> list_events(user_id, "accepted")
+      [%Event{}, ...]
+
+  """
+  def list_events(user_id, status) do
+    status_code = Invite.get_status_code(status)
+    user_id
+    |> user_events_query()
+    |> where([e,i], i.status == ^status_code)
+    |> Repo.all()
   end
 
   @doc """
@@ -35,7 +68,7 @@ defmodule EventPlatform.EventManagement do
       nil
 
   """
-  def get_event(id), do: Repo.get(Event, id)
+  def get_event(id), do: Repo.get(Event, id) |> preload_event_host
 
   @doc """
     Gets a single event with invites.
@@ -56,7 +89,6 @@ defmodule EventPlatform.EventManagement do
     |> get_event()
     |> Repo.preload(:invites)
   end
-  
 
   @doc """
   Creates an event.
@@ -82,6 +114,7 @@ defmodule EventPlatform.EventManagement do
         %Event{}
         |> Event.changeset(attrs)
         |> Repo.insert()
+        |> preload_event_host()
 
       {:error, errors} ->
         {:error, errors}
@@ -107,13 +140,12 @@ defmodule EventPlatform.EventManagement do
     |> case do
       {:ok, attrs} ->
         event
-        |> Event.changeset(attrs)
+        |> Event.update_changeset(attrs)
         |> Repo.update()
 
       {:error, errors} ->
         {:error, errors}
     end
-    
   end
 
   @doc """
@@ -143,56 +175,108 @@ defmodule EventPlatform.EventManagement do
       [%Invite{}, ...]
 
   """
-  def list_invites do
-    Repo.all(Invite)
+
+  def list_invites(event_id),
+    do: Repo.all(Invite, event_id: event_id) |> preload_invitee
+
+  def list_invites(event_id, status) do
+    case Invite.get_status_code(status) do
+      nil ->
+        {:error, :not_found}
+
+      status_code ->
+        from(i in Invite, where: i.event_id == ^event_id and i.status == ^status_code)
+        |> Repo.all()
+        |> preload_invitee()
+    end
   end
 
   @doc """
-  Creates a invite.
-
-  ## Examples
-
-      iex> create_invite(%{field: value})
-      {:ok, %Invite{}}
-
-      iex> create_invite(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
 
   """
-  def create_invite(attrs) do
-    %Invite{}
-    |> Invite.changeset(attrs)
-    |> Repo.insert()
+
+  def update_invite(event_id, user_id, rsvp) do
+    with %Invite{} = invite <- get_invite(event_id, user_id) do
+      invite
+      |> Invite.changeset(%{status: rsvp})
+      |> Repo.update()
+    else
+      _ ->
+        {:error, :not_found}
+    end
   end
 
-  @doc """
-  Deletes a invite.
+  # @doc """
+  # Deletes a invite.
 
-  ## Examples
+  # ## Examples
 
-      iex> delete_invite(invite)
-      {:ok, %Invite{}}
+  #     iex> delete_invite(invite)
+  #     {:ok, %Invite{}}
 
-      iex> delete_invite(invite)
-      {:error, %Ecto.Changeset{}}
+  #     iex> delete_invite(invite)
+  #     {:error, %Ecto.Changeset{}}
 
-  """
-  def delete_invite(id) when is_binary(id), do: Invite |> Repo.get(id) |> delete_invite()
+  # """
+  # def delete_invite(id) when is_binary(id), do: Invite |> Repo.get(id) |> delete_invite()
 
-  def delete_invite(%Invite{} = invite) do
-    Repo.delete(invite)
-  end
+  # def delete_invite(%Invite{} = invite) do
+  #   Repo.delete(invite)
+  # end
 
   def add_invitees(event_id, user_ids) do
     multi = Invite.add_invitees(event_id, user_ids)
 
     with {:ok, result} <- Repo.transaction(multi) do
-      {:ok,  result |> Enum.map(& elem(&1, 1))}
+      {:ok, result |> Enum.map(&elem(&1, 1)) |> Enum.map(&preload_invitee/1)}
     else
       {:error, _failed_operation, failed_value, _changes} ->
         {:error, failed_value.errors}
     end
   end
+
+  @doc """
+    Get invite for an event for a user
+  """
+  defp get_invite(event_id, user_id) do
+    Invite
+    |> where([i], i.event_id == ^event_id and i.user_id == ^user_id)
+    |> Repo.one()
+  end
+
+  defp user_events_query(user_id) do
+    from(e in Event,
+      join: i in Invite,
+      on: e.id == i.event_id,
+      where: i.user_id == ^user_id
+    )
+  end
+
+  defp preload_invites(events) when is_list(events) do
+    Enum.map(events, &preload_invites/1)
+  end
+
+  defp preload_invites(%Event{} = event) do
+    event |> Repo.preload(:invites)
+  end
+
+  defp preload_invitee(invites) when is_list(invites) do
+    Enum.map(invites, &preload_invitee/1)
+  end
+
+  defp preload_invitee(%Invite{} = invite) do
+    invite |> Repo.preload(:invitee)
+  end
+
+  defp preload_event_host({:ok, event}) do
+    {:ok, event |> Repo.preload(:host)}
+  end
+
+  defp preload_event_host(%Event{} = event) do
+    event |> Repo.preload(:host)
+  end
+
+  defp preload_event_host(event), do: event
 
   @doc """
   Validates the map for date format in given keys

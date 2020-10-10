@@ -18,8 +18,9 @@ defmodule EventPlatform.EventManagement do
 
   """
   def list_events do
-    Repo.all(Event)
-    |> preload_invites()
+    Event
+    |> preload([:invites, :host])
+    |> Repo.all()
   end
 
   @doc """
@@ -33,11 +34,12 @@ defmodule EventPlatform.EventManagement do
   """
   def list_events(user_id) do
     user_id
-    |>user_events_query
+    |> user_events_query
+    |> preload(:host)
     |> Repo.all()
   end
 
-   @doc """
+  @doc """
   Returns the list of events a User with given status
 
   ## Examples
@@ -48,9 +50,11 @@ defmodule EventPlatform.EventManagement do
   """
   def list_events(user_id, status) do
     status_code = Invite.get_status_code(status)
+
     user_id
     |> user_events_query()
-    |> where([e,i], i.status == ^status_code)
+    |> preload(:host)
+    |> where([e, i], i.status == ^status_code)
     |> Repo.all()
   end
 
@@ -177,7 +181,7 @@ defmodule EventPlatform.EventManagement do
   """
 
   def list_invites(event_id),
-    do: Repo.all(Invite, event_id: event_id) |> preload_invitee
+    do: Invite |> preload(:invitee) |> Repo.all(event_id: event_id)
 
   def list_invites(event_id, status) do
     case Invite.get_status_code(status) do
@@ -192,13 +196,15 @@ defmodule EventPlatform.EventManagement do
   end
 
   @doc """
+    Update the status of invite to member for an event
 
+    rsvp can be yes or no
   """
 
   def update_invite(event_id, user_id, rsvp) do
     with %Invite{} = invite <- get_invite(event_id, user_id) do
       invite
-      |> Invite.changeset(%{status: rsvp})
+      |> Invite.changeset(%{status: Invite.transform_rsvp(rsvp)})
       |> Repo.update()
     else
       _ ->
@@ -225,14 +231,25 @@ defmodule EventPlatform.EventManagement do
   # end
 
   def add_invitees(event_id, user_ids) do
-    multi = Invite.add_invitees(event_id, user_ids)
+    result =
+      user_ids
+      |> Enum.reduce({[], []}, fn user_id, {invites, errors} ->
+        case insert_invite(event_id, user_id) do
+          {:ok, invite} ->
+            {[invite | invites], errors}
 
-    with {:ok, result} <- Repo.transaction(multi) do
-      {:ok, result |> Enum.map(&elem(&1, 1)) |> Enum.map(&preload_invitee/1)}
-    else
-      {:error, _failed_operation, failed_value, _changes} ->
-        {:error, failed_value.errors}
-    end
+          {:error, error} ->
+            {invites, [error | errors]}
+        end
+      end)
+
+    {:ok, result}
+  end
+
+  defp insert_invite(event_id, user_id) do
+    %Invite{}
+    |> Invite.changeset(%{user_id: user_id, event_id: event_id, status: 1})
+    |> Repo.insert()
   end
 
   @doc """
@@ -250,14 +267,6 @@ defmodule EventPlatform.EventManagement do
       on: e.id == i.event_id,
       where: i.user_id == ^user_id
     )
-  end
-
-  defp preload_invites(events) when is_list(events) do
-    Enum.map(events, &preload_invites/1)
-  end
-
-  defp preload_invites(%Event{} = event) do
-    event |> Repo.preload(:invites)
   end
 
   defp preload_invitee(invites) when is_list(invites) do

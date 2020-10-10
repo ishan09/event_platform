@@ -2,9 +2,8 @@ defmodule EventPlatform.EventManagement.Invite do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias EventPlatform.EventManagement.{Event,Invite}
+  alias EventPlatform.EventManagement.Event
   alias EventPlatform.UserManagement.User
-  alias Ecto.Multi
   @status %{1 => "invited", 2 => "cancelled", 3 => "accepted"}
   @rsvp %{"no" => 2, "yes" => 3 }
 
@@ -24,26 +23,18 @@ defmodule EventPlatform.EventManagement.Invite do
     invite
     |> cast(attrs, [:status, :event_id, :user_id])
     |> validate_required([:status, :event_id, :user_id])
-    |> update_change(:status, &transform_rsvp/1)
     |> validate_inclusion(:status, Map.keys(@status))
     |> foreign_key_constraint(:event_id)
     |> foreign_key_constraint(:user_id)
+    |> unique_constraint([:event_id, :user_id], message: "invite already sent")
   end
 
-  def add_invitees(event_id, user_ids) do
-    user_ids
-    |> Enum.reduce( Multi.new(), fn user_id, multi ->
-      invite_changeset = changeset(%Invite{},%{user_id: user_id, event_id: event_id, status: 1})
-
-      multi |> Multi.insert(user_id, invite_changeset)
-    end)
-  end
 
   def get_status_code(status) do
     @status |> Enum.find({nil, nil}, fn{_code,value} -> status == value end) |> elem(0)
   end
 
   def transform_rsvp(rsvp) do
-    @rsvp |> Map.get(rsvp, 1)
+    @rsvp |> Map.get(rsvp)
   end
 end

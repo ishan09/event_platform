@@ -61,6 +61,9 @@ defmodule EventPlatformWeb.Router do
       put "/events/:id", EventController, :update
       delete "/events/:id", EventController, :delete
 
+      get "/events/:event_id/invitees", InviteController, :index
+      post "/events/:event_id/invitees", InviteController, :create
+      
     end
 
   end

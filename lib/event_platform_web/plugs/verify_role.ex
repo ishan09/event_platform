@@ -8,7 +8,7 @@ defmodule EventPlatformWeb.Plugs.VerifyRole do
          {:has_role, true} <- {:has_role, Enum.member?(opts, role)} do
       assign(conn, :user, claims)
     else
-      _ -> conn |> send_resp(401, "unauthorized") |> halt()
+      _ -> conn |> send_resp(403, "unauthorized") |> halt()
     end
   end
 end

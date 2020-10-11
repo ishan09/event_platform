@@ -2,7 +2,7 @@ defmodule EventPlatformWeb.InviteView do
   use EventPlatformWeb, :view
   alias EventPlatformWeb.InviteView
 
-  @status %{1 => "invited", 2 => "rejected", 3 => "accepted"}
+  @status %{1 => "invited", 2 => "cancelled", 3 => "accepted"}
 
   def render("ok.json", _) do
     :ok

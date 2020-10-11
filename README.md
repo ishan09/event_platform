@@ -8,14 +8,14 @@ To start Application server:
 
 
 
-#Event Manager
+# Event Manager
 
 
 Following are the two roles in the platform
 - Admin
 - Member
 
-##Admin
+## Admin
 An Admin has following authorization
 - To view all the events on the platform
 - To create an event
@@ -24,7 +24,7 @@ An Admin has following authorization
 - To delete an event
 - Admin can send invites to the Users.
 
-##Member
+## Member
 A Member has following authorization
 - Can see all the events for which he has the invitation.
 - Member can send confirmation for the event.
@@ -34,7 +34,7 @@ A Member has following authorization
 
 
 
-##Database Tables
+## Database Tables
 - users 
 - topics_of_interests
 - users_topics_of_interests
@@ -57,7 +57,7 @@ lib
 
 
 
-##Endpoints    
+## Endpoints    
 
 ### Authentication and Authorization
 The application use Guardian for authentication using JWT token. Client needs to send the header that looks like below:
@@ -110,6 +110,6 @@ Following controllers are there in application
 
 Updated list of enpoints avaliable in <a href="https://www.getpostman.com/collections/8121a02e8b809a194c28">Postman collection</a>
 
-##Seed
+## Seed
 
 Seed file loads the basic test data for all the data base tables.

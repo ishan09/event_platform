@@ -181,7 +181,11 @@ defmodule EventPlatform.EventManagement do
   """
 
   def list_invites(event_id),
-    do: Invite |> preload(:invitee) |> Repo.all(event_id: event_id)
+    do:
+      Invite
+      |> where([i], i.event_id == ^event_id)
+      |> preload(:invitee)
+      |> Repo.all()
 
   def list_invites(event_id, status) do
     case Invite.get_status_code(status) do
@@ -190,8 +194,8 @@ defmodule EventPlatform.EventManagement do
 
       status_code ->
         from(i in Invite, where: i.event_id == ^event_id and i.status == ^status_code)
+        |> preload(:invitee)
         |> Repo.all()
-        |> preload_invitee()
     end
   end
 
@@ -211,24 +215,6 @@ defmodule EventPlatform.EventManagement do
         {:error, :not_found}
     end
   end
-
-  # @doc """
-  # Deletes a invite.
-
-  # ## Examples
-
-  #     iex> delete_invite(invite)
-  #     {:ok, %Invite{}}
-
-  #     iex> delete_invite(invite)
-  #     {:error, %Ecto.Changeset{}}
-
-  # """
-  # def delete_invite(id) when is_binary(id), do: Invite |> Repo.get(id) |> delete_invite()
-
-  # def delete_invite(%Invite{} = invite) do
-  #   Repo.delete(invite)
-  # end
 
   def add_invitees(event_id, user_ids) do
     result =
@@ -267,14 +253,6 @@ defmodule EventPlatform.EventManagement do
       on: e.id == i.event_id,
       where: i.user_id == ^user_id
     )
-  end
-
-  defp preload_invitee(invites) when is_list(invites) do
-    Enum.map(invites, &preload_invitee/1)
-  end
-
-  defp preload_invitee(%Invite{} = invite) do
-    invite |> Repo.preload(:invitee)
   end
 
   defp preload_event_host({:ok, event}) do

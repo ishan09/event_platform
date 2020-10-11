@@ -11,6 +11,17 @@ defmodule EventPlatformWeb.EventController do
     render(conn, "index_event_details.json", events: events)
   end
 
+  def index(%{assigns: %{user: %{id: user_id, role: "member"}}} = conn, _params) do
+    events = EventManagement.list_events(user_id)
+    render(conn, "index.json", events: events)
+  end
+
+  def calender(conn, _params) do
+    user_id = conn.assigns.user.id
+    events = EventManagement.list_events(user_id, "accepted")
+    render(conn, "calender.json", events: events)
+  end
+
   def create(conn, %{"event" => event_params}) do
     user_id = conn.assigns.user.id
 

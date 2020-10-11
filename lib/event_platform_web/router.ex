@@ -65,12 +65,16 @@ defmodule EventPlatformWeb.Router do
       post "/events/:event_id/invitees", InviteController, :create
       
       get "/events/:event_id/invitees/:status", InviteController, :index
+      
     end
 
     scope "/v1", as: :v1 do
       pipe_through(:verify_member)
+      get "/my-calendar", EventController, :my_calendar
+
       get "/events", EventController, :index
       put "/events/:event_id/rsvp", InviteController, :add_rsvp
+      get "/events/calender", EventController, :calender
     end
   end
 

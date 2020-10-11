@@ -16,9 +16,13 @@ defmodule EventPlatformWeb.InviteController do
   end
 
   def index(conn, %{"event_id" => event_id}) do
-    with invites when is_list(invites) <- EventManagement.list_invites(event_id) do
+    with {:get_event, %Event{}} <- {:get_event, EventManagement.get_event(event_id)},
+         invites when is_list(invites) <- EventManagement.list_invites(event_id) do
       render(conn, "index_invitees.json", invites: invites)
     else
+      {:get_event, _} ->
+        {:error, :not_found}
+
       error ->
         error
     end
@@ -41,9 +45,11 @@ defmodule EventPlatformWeb.InviteController do
       {:get_event, _} ->
         {:error, :not_found}
 
+      {:error, :not_found} ->
+        {:error, :not_found}
+
       _ ->
         render(conn, "error.json", error: "Invalid invite response")
     end
   end
-
 end

@@ -84,7 +84,8 @@ events = [
     start_time: "2020-12-31 14:00:00",
     end_time: "2020-12-31 16:00:00",
     location: "New Delhi",
-    type: "Some Type"
+    type: "Some Type",
+    host_id: 1
   },
   %{
     title: "Event 2",
@@ -92,7 +93,8 @@ events = [
     start_time: "2021-11-30 14:00:00",
     end_time: "2021-11-30 16:00:00",
     location: "New Delhi",
-    type: "Some Type"
+    type: "Some Type",
+    host_id: 1
   },
   %{
     title: "Event 3",
@@ -100,7 +102,8 @@ events = [
     start_time: "2021-10-31 14:00:00",
     end_time: "2021-10-31 14:30:00",
     location: "New Delhi",
-    type: "Some Type"
+    type: "Some Type",
+    host_id: 1
   },
   %{
     title: "Event 4",
@@ -108,7 +111,8 @@ events = [
     start_time: "2021-12-26 14:00:00",
     end_time: "2021-12-26 15:00:00",
     location: "New Delhi",
-    type: "Some Type"
+    type: "Some Type",
+    host_id: 1
   }
 ]
 

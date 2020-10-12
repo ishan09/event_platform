@@ -49,7 +49,9 @@ defmodule EventPlatformWeb.InviteController do
         {:error, :not_found}
 
       _ ->
-        render(conn, "error.json", error: "Invalid invite response")
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render( "error.json", error: "Invalid invite response")
     end
   end
 end

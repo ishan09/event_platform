@@ -12,7 +12,7 @@ defmodule EventPlatform.UserManagementTest do
       first_name: "some first_name",
       gender: "some gender",
       last_name: "some last_name",
-      role: "customer",
+      role: "member",
       password: "Password1"
     }
     @invalid_attrs %{
@@ -40,9 +40,8 @@ defmodule EventPlatform.UserManagementTest do
     end
 
     test "get_user/1 returns the user with invalid id" do
-      assert  is_nil(UserManagement.get_user(0) )
+      assert is_nil(UserManagement.get_user(0))
     end
-
 
     test "signup_user/1 with valid data creates a user" do
       assert {:ok, %User{} = user} = UserManagement.signup_user(@valid_attrs)
@@ -51,7 +50,7 @@ defmodule EventPlatform.UserManagementTest do
       assert user.first_name == "some first_name"
       assert user.gender == "some gender"
       assert user.last_name == "some last_name"
-      assert user.role == "customer"
+      assert user.role == "member"
     end
 
     test "signup_user/1 with invalid data returns error changeset" do
@@ -120,8 +119,8 @@ defmodule EventPlatform.UserManagementTest do
     end
 
     test "add invalid interest in user", %{user: user, topics_of_interests: [_topic1, topic2]} do
-      assert   {:error, :not_found} == (UserManagement.update_user_with_topics_of_interest(user.id, topic2.id + 2))
-      
+      assert {:error, :not_found} ==
+               UserManagement.update_user_with_topics_of_interest(user.id, topic2.id + 2)
     end
 
     test "remove topic of interest from user", %{

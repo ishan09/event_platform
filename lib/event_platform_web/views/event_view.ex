@@ -26,17 +26,19 @@ defmodule EventPlatformWeb.EventView do
     %{data: render_one(event, EventView, "event.json")}
   end
 
+  def render("show_event_details.json", %{event: event}) do
+    %{data: render_one(event, EventView, "event_details.json")}
+  end
+
   def render("event_details.json", %{event: event}) do
-    if event != nil do
-      render(EventView, "event.json", event: event)
-      |> Map.merge(%{
-        invitaiton_count: Enum.count(event.invites),
-        invitation_accepted:
-          Enum.count(event.invites, &(&1.status == Map.get(@invitation_status_code, "accepted"))),
-        invitation_cancelled:
-          Enum.count(event.invites, &(&1.status == Map.get(@invitation_status_code, "cancelled")))
-      })
-    end
+    render(EventView, "event.json", event: event)
+    |> Map.merge(%{
+      invitaiton_count: Enum.count(event.invites),
+      invitation_accepted:
+        Enum.count(event.invites, &(&1.status == Map.get(@invitation_status_code, "accepted"))),
+      invitation_cancelled:
+        Enum.count(event.invites, &(&1.status == Map.get(@invitation_status_code, "cancelled")))
+    })
   end
 
   def render("event.json", %{event: event}) do

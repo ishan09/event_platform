@@ -35,7 +35,7 @@ defmodule EventPlatformWeb.EventController do
 
   def show(conn, %{"id" => id}) do
     with %Event{} = event <- EventManagement.get_event_with_invites(id) do
-      render(conn, "event_details.json", event: event)
+      render(conn, "show_event_details.json", event: event)
     else
       _ ->
         {:error, :not_found}

@@ -2,7 +2,7 @@ defmodule EventPlatform.EventManagementTest do
   use EventPlatform.DataCase
 
   alias EventPlatform.EventManagement
-  alias EventPlatform.EventManagement.{Event, Invite}
+  alias EventPlatform.EventManagement.Event
 
   describe "events" do
     @valid_attrs %{
@@ -31,17 +31,18 @@ defmodule EventPlatform.EventManagementTest do
     }
 
     def event_fixture() do
-      insert(:event, @valid_attrs)
+      host = insert(:user)
+      insert(:event, Map.put(@valid_attrs, :host_id, host.id))
     end
 
     test "list_events/0 returns all events" do
-      event = event_fixture()
-      assert EventManagement.list_events() == [event]
+      %{id: event_id} = event_fixture()
+      assert [%{id: ^event_id}] = EventManagement.list_events()
     end
 
     test "get_event/1 returns the event with given id" do
       event = event_fixture()
-      assert EventManagement.get_event(event.id) == event
+      assert EventManagement.get_event(event.id).id == event.id
     end
 
     test "create_event/1 with valid data creates a event" do
@@ -55,12 +56,18 @@ defmodule EventPlatform.EventManagementTest do
     end
 
     test "create_event/1 with invalid date format returns error" do
-      attrs = @valid_attrs |> Map.merge(%{start_date: "2011-31-05 15:01:01", end_date: "2011-31-05 16:01:01"})
+      attrs =
+        @valid_attrs
+        |> Map.merge(%{start_date: "2011-31-05 15:01:01", end_date: "2011-31-05 16:01:01"})
+
       assert {:error, %{keys: [:start_date, :end_date]}} = EventManagement.create_event(attrs)
     end
 
     test "create_event/1 with end_date before start_date returns error changeset" do
-      attrs = @valid_attrs |> Map.merge(%{start_time: "2020-12-31 16:01:01", end_time: "2011-12-31 15:01:01"})
+      attrs =
+        @valid_attrs
+        |> Map.merge(%{start_time: "2020-12-31 16:01:01", end_time: "2011-12-31 15:01:01"})
+
       assert {:error, %Ecto.Changeset{}} = EventManagement.create_event(attrs)
     end
 
@@ -82,7 +89,7 @@ defmodule EventPlatform.EventManagementTest do
     test "update_event/2 with invalid data returns error changeset" do
       event = event_fixture()
       assert {:error, %Ecto.Changeset{}} = EventManagement.update_event(event, @invalid_attrs)
-      assert event == EventManagement.get_event(event.id)
+      assert event.id == EventManagement.get_event(event.id).id
     end
 
     test "delete_event/1 deletes the event" do
@@ -104,23 +111,17 @@ defmodule EventPlatform.EventManagementTest do
       {:ok, host: host, event: event, invite: invite, invitee: invitee}
     end
 
-    test "list all invites", %{invite: invite} do
-      assert [^invite] = EventManagement.list_invites()
+    test "list all invites", %{invite: %{id: invite_id}, event: event} do
+      assert [%{id: ^invite_id}] = EventManagement.list_invites(event.id)
     end
 
     test "create invite with valid data", %{event: %{id: event_id}, invitee: %{id: user_id}} do
-      assert {:ok, %Invite{}} =
-               EventManagement.create_invite(%{user_id: user_id, event_id: event_id, status: 2})
+      assert {:ok, {[%{user_id: ^user_id, event_id: ^event_id}], []}} =
+               EventManagement.add_invitees(event_id, [user_id])
     end
 
     test "create invite with invalid data", %{} do
-      assert {:error, %Ecto.Changeset{}} = EventManagement.create_invite(%{})
-    end
-
-    test "delete invite ", %{invite: invite} do 
-      assert {:ok, %Invite{}}  = EventManagement.delete_invite(invite)
-
-      assert is_nil(Repo.get(Invite, invite.id))
+      assert {:ok, {[], [%Ecto.Changeset{}]}} = EventManagement.add_invitees(0, [0])
     end
   end
 end

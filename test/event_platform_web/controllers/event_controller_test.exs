@@ -28,14 +28,7 @@ defmodule EventPlatformWeb.EventControllerTest do
     type: nil
   }
 
-  setup %{conn: conn} do
-    conn =
-      conn
-      |> put_req_header("accept", "application/json")
-      |> add_authentication_token()
-
-    {:ok, conn: conn}
-  end
+  setup [:admin_user, :add_authentication_token]
 
   describe "index" do
     test "lists all events", %{conn: conn} do
@@ -54,9 +47,9 @@ defmodule EventPlatformWeb.EventControllerTest do
       assert %{
                "id" => id,
                "description" => "some description",
-               "end_time" => "2010-04-17T14:00:00",
+               "end_time" => "2010-04-17 14:00:00",
                "location" => "some location",
-               "start_time" => "2010-04-17T14:00:00",
+               "start_time" => "2010-04-17 14:00:00",
                "title" => "some title",
                "type" => "some type"
              } = json_response(conn, 200)["data"]
@@ -80,9 +73,9 @@ defmodule EventPlatformWeb.EventControllerTest do
       assert %{
                "id" => id,
                "description" => "some updated description",
-               "end_time" => "2011-05-18T15:01:01",
+               "end_time" => "2011-05-18 15:01:01",
                "location" => "some updated location",
-               "start_time" => "2011-05-18T15:01:01",
+               "start_time" => "2011-05-18 15:01:01",
                "title" => "some updated title",
                "type" => "some updated type"
              } = json_response(conn, 200)["data"]
@@ -103,21 +96,48 @@ defmodule EventPlatformWeb.EventControllerTest do
 
       assert get(conn, Routes.event_path(conn, :show, event)) |> response(404)
     end
+
+    test "deletes invalid event", %{conn: conn} do
+      conn = delete(conn, Routes.event_path(conn, :delete, 0))
+      assert response(conn, 404)
+    end
   end
 
-  
+  describe "index events for member role" do
+    setup [:member_user, :add_authentication_token, :create_event, :create_invite, :create_event]
+
+    test "member user can see the list of events for which they are invited", %{conn: conn} do
+      conn = get(conn, Routes.v1_event_path(conn, :index))
+      assert length(json_response(conn, 200)["data"]) == 1
+    end
+  end
 
   defp create_event(_) do
     event = insert(:event, @create_attrs)
     %{event: event}
   end
 
- 
+  defp create_invite(%{event: event, user: user}) do
+    event = insert(:invite, %{event_id: event.id, user_id: user.id})
+    %{event: event}
+  end
 
-  defp add_authentication_token(conn) do
-    user = insert(:user, %{role: "admin"})
+  defp admin_user(_) do
+    %{user: insert(:user, %{role: "admin"})}
+  end
+
+  defp member_user(_) do
+    %{user: insert(:user, %{role: "member"})}
+  end
+
+  defp add_authentication_token(%{conn: conn, user: user}) do
     {:ok, token} = EventPlatformWeb.AuthenticationHelper.create_token(user)
 
-    conn |> put_req_header("authorization", "Bearer #{token}")
+    conn =
+      conn
+      |> put_req_header("authorization", "Bearer #{token}")
+      |> put_req_header("accept", "application/json")
+
+    %{conn: conn}
   end
 end

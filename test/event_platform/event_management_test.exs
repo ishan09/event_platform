@@ -115,10 +115,10 @@ defmodule EventPlatform.EventManagementTest do
       assert [%{id: ^invite_id}] = EventManagement.list_invites(event.id)
     end
 
-    test "create invite with valid data", %{event: %{id: event_id}, invitee: %{id: user_id}} do
-      assert {:ok, {[%{user_id: ^user_id, event_id: ^event_id}], []}} =
-               EventManagement.add_invitees(event_id, [user_id])
-    end
+    # test "create invite with valid data", %{event: %{id: event_id}, invitee: %{id: user_id}} do
+    #   assert {:ok, {[%{user_id: ^user_id, event_id: ^event_id}], []}} =
+    #            EventManagement.add_invitees(event_id, [user_id])
+    # end
 
     test "create invite with invalid data", %{} do
       assert {:ok, {[], [%Ecto.Changeset{}]}} = EventManagement.add_invitees(0, [0])
